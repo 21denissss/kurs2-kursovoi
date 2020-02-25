@@ -12,13 +12,14 @@
 using namespace sf; 
 using namespace std;
 using namespace Btn;
+const int RECTANGLENUMBERS = 16;
 int Volume[4] = {11,20,40};
 Texture Textures[79];
 Sprite Sprites[79];
+string Name;
 int number = 0;
 /*
-1. Сделать игру
-2. Пофиксить настройки(уровень музыки в главном меню)
+1. Передалать все под принципы ооп
 */
 
 void init(RenderWindow& window)
@@ -96,6 +97,39 @@ void about(RenderWindow& window)
 	}
 }
 
+void login(RenderWindow& window)
+{
+	Texture LoginBack;
+	LoginBack.loadFromFile("resources/main2.png");
+	Sprite background(LoginBack);
+	Label YourName("Input your name:", 10, 10);
+	TextBox NameBox(310,10);
+	Button UseBtn("Use", 430, 10, 60);
+	while (window.isOpen())
+	{
+		Vector2i mouse = Mouse::getPosition(window);
+		Event event;
+		window.pollEvent(event);
+		window.clear();
+		if (NameBox.getSelect(event, mouse)) {
+			NameBox.editTextString(event);
+		}
+		if (UseBtn.onClick(mouse, Color::Yellow)) {
+			if (NameBox.getString() == "") {
+				Name = "User";
+			}
+			else
+				Name = NameBox.getString();
+			return;
+		}
+		window.draw(background);
+		UseBtn.outHere(window);
+		YourName.outHere(window);
+		NameBox.outHere(window);
+		window.display();
+	}
+}
+
 void settings(RenderWindow& window)
 {
 	Texture SettingBack;
@@ -111,13 +145,13 @@ void settings(RenderWindow& window)
 		window.pollEvent(event);
 		window.clear();
 		if (MenuBox.getSelect(event, mouse)) {
-			MenuBox.editText(event);
+			MenuBox.editTextInt(event);
 		}
 		if (NewtonBox.getSelect(event, mouse)) {
-			NewtonBox.editText(event);
+			NewtonBox.editTextInt(event);
 		}
 		if (AboutBox.getSelect(event, mouse)) {
-			AboutBox.editText(event);
+			AboutBox.editTextInt(event);
 		}
 		if (BackBtn.onClick(mouse,Color::Yellow)) {
 			return;
@@ -154,33 +188,43 @@ void game(RenderWindow& window)
 	music.openFromFile("resources/music/play.ogg");
 	music.setVolume(Volume[0]);
 	music.play();
+	music.setLoop(1);
 	Texture GameBack1;
-	Btn::Rectangle rect[16];
+	Btn::Rectangle rect[RECTANGLENUMBERS];
 	GameBack1.loadFromFile("resources/game1.jpg");
-	Label WinLbl("", 50, 50);// , OutLbl("", 50, 350);
+	TextBox CodeBox(1400, 700);
+	Label WinLbl("", 50, 50), OutLbl("", 50, 350), UserLbl("",0,0);
 	Sprite background(GameBack1);
-	Button BackBtn("Back", 1350, 50, 80),RestartBtn("Restart",1350,100,140),WinBtn("Win",1350,150,60);
+	Button BackBtn("Back", 1350, 50, 80),RestartBtn("Restart",1350,100,140),CheckBtn("Check Code",1350,650,160);
 	while (window.isOpen())
 	{
+		UserLbl.setText(Name);
 		Vector2i mouse = Mouse::getPosition(window);
 		Event event;
 		window.pollEvent(event);
 		window.clear();
+
 		if (BackBtn.onClick(mouse, Color::Yellow)) {
 			return;
 		}
 		if (RestartBtn.onClick(mouse, Color::Yellow)) {
-			for (int i = 0; i < 39; i++) {
+			for (int i = 0; i < 3*RECTANGLENUMBERS; i++) {
 				Vector2i vect1, vect2;
-				int rand1 = rand()%15, rand2 = rand()%15;
+				int rand1 = rand()%(RECTANGLENUMBERS-1), rand2 = rand()%(RECTANGLENUMBERS - 1);
 				vect1 = rect[rand1].getPosition();
 				vect2 = rect[rand2].getPosition();
 				rect[rand1].setPosition(vect2);
 				rect[rand2].setPosition(vect1);
 			}
 		}
-		if (WinBtn.onClick(mouse, Color::Yellow)) {
-			for (int i = 0; i < 16; i++) {
+		if (CodeBox.getSelect(event, mouse)) {	
+			{
+				CodeBox.editTextString(event);
+			}
+		}
+		if (CheckBtn.onClick(mouse, Color::Yellow)) {
+			if(CodeBox.getString() == "win")
+			for (int i = 0; i < RECTANGLENUMBERS; i++) {
 				Vector2i vect = rect[i].getWinPosition();
 				rect[i].setPosition(vect);
 			}
@@ -188,16 +232,30 @@ void game(RenderWindow& window)
 		if (Keyboard::isKeyPressed(Keyboard::Escape)) {
 			return;
 		}
-		for (int i = 0; i < 16; i++) {
+		for (int i = 0; i < RECTANGLENUMBERS; i++) {
 			if (rect[i].onClick(mouse)) {
-				mouse = Mouse::getPosition(window);
-				for (int j = 0; j < 16; j++){
-					if (rect[j].select(mouse, Color::Yellow) && rect[j].getNumber() == 0) {
+				Vector2i vect1, vect2;
+				vect1 = rect[i].getPosition();
+				vect2 = rect[0].getPosition();
+				if ((abs(vect1.x - vect2.x) == 75) || (abs(vect1.y - vect2.y) == 75))
+					if ((abs(vect1.x - vect2.x) == 0) || (abs(vect1.y - vect2.y) == 0)) {
+						rect[i].setPosition(vect2);
+						rect[0].setPosition(vect1);
+						break;
+					}
+			}
+		}
+		//Ячейки менять местами путем переноса одной яйчейки на другую
+		/*for (int i = 0; i < RECTANGLENUMBERS; i++) {
+			if (rect[i].onClick(mouse)) {
+				Vector2i mouse2 = Mouse::getPosition(window);
+				for (int j = 0; j < RECTANGLENUMBERS; j++){
+					if (rect[j].select(mouse2, Color::Yellow) && rect[j].getNumber() == 0) {
 						Vector2i vect1, vect2;
 						vect1 = rect[i].getPosition();
 						vect2 = rect[j].getPosition();
 						if((abs(vect1.x - vect2.x) == 75)||(abs(vect1.y-vect2.y) == 75))
-						if(!((abs(vect1.x - vect2.x) == 75) && (abs(vect1.y - vect2.y) == 75))){
+						if((abs(vect1.x - vect2.x) == 0) || (abs(vect1.y - vect2.y) == 0)){
 							rect[i].setPosition(vect2);
 							rect[j].setPosition(vect1);
 							break;
@@ -205,14 +263,14 @@ void game(RenderWindow& window)
 					}
 				}
 			}
-		}
-		for (int i = 0; i < 16; i++) {
+		}*/
+		for (int i = 0; i < RECTANGLENUMBERS; i++) {
 			Vector2i vect1, vect2;
 			WinLbl.setText("Status: Not Win");
 			vect1 = rect[i].getPosition();
 			vect2 = rect[i].getWinPosition();
 			if (vect1 == vect2) {
-				if(i != 15)
+				if(i != RECTANGLENUMBERS-1)
 					continue;
 			}
 			else
@@ -223,9 +281,11 @@ void game(RenderWindow& window)
 		BackBtn.outHere(window);
 		WinLbl.outHere(window);
 		RestartBtn.outHere(window);
-		WinBtn.outHere(window);
-		//OutLbl.outHere(window);
-		for (int i = 0; i < 16; i++) {
+		CheckBtn.outHere(window);
+		CodeBox.outHere(window);
+		UserLbl.outHere(window);
+		OutLbl.outHere(window);
+		for (int i = 0; i < RECTANGLENUMBERS; i++) {
 			rect[i].OutHere(window);
 		}
 		window.display();
@@ -238,19 +298,20 @@ void menu(RenderWindow& window)
 	music.openFromFile("resources/music/main.ogg");
 	music.play();
 	music.setLoop(1);
-	Texture MenuBackground, AboutBack;
-	AboutBack.loadFromFile("resources/aboutback.png");
+	Texture MenuBackground;
 	MenuBackground.loadFromFile("resources/city.jpg");
-	Sprite Background(MenuBackground),About(AboutBack);
+	Sprite Background(MenuBackground);
 	bool IsMenu = 1;
 	int MenuNum = 0;
 	Background.setPosition(0, 0);
 	Button AboutBtn("About",100,400,100), ExitBtn("Exit",100,500,80), SettingBtn("Settings",1350,50,150), PlayBtn("Play",100,300,150);
+	Label UserLbl("", 0, 0);
 	while (IsMenu) {
 		Event event;
 		window.pollEvent(event);
 		Vector2i mouse = Mouse::getPosition(window);
 		window.clear();
+		UserLbl.setText(Name);
 		music.setVolume(Volume[2]);
 		if (PlayBtn.onClick(mouse)) {
 			music.pause();
@@ -272,13 +333,13 @@ void menu(RenderWindow& window)
 			load(window);
 		}
 		if (ExitBtn.onClick(mouse)) {
-			window.close(); 
-			exit(0);
+			return;
 		}
 		window.draw(Background);
 		PlayBtn.outHere(window);
 		AboutBtn.outHere(window);
 		SettingBtn.outHere(window);
+		UserLbl.outHere(window);
 		ExitBtn.outHere(window);
 		window.display();
 	}
@@ -292,7 +353,9 @@ int main()
 	//FreeConsole();
 	RenderWindow window(VideoMode(1600, 900), "15");
 	init(window);
+	login(window);
 	load(window);
 	menu(window);
+	window.close();
 	return 0;
 }
