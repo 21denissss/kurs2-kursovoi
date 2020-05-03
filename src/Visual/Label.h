@@ -1,17 +1,6 @@
 #pragma once
-
-#include <SFML/Graphics.hpp>
-#include <SFML/OpenGL.hpp>
-#include <SFML/Audio.hpp>
-#include <cmath>
-#include <GL/glut.h>
-#include <sstream>
-#include <iostream>
-#include <locale>
-#include <string.h>
-#include <windows.h>
-#include "src/Logic/Converting.h"
-
+#include "../Logic/Header.h"
+#include "../Logic/Converting.h"
 using namespace sf;
 using namespace std;
 

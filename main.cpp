@@ -1,30 +1,24 @@
-﻿#include <SFML/Graphics.hpp>
-#include <SFML/OpenGL.hpp>
-#include <random>
-#include <SFML/Audio.hpp>
-#include "HelpFile.hpp"
-#include <GL/glut.h>
-#include <cstdlib>
-#include <iostream>
-#include <string.h>
-#include <windows.h>
-#include <ctime>
-#include "Label.h"
+﻿#include "src/Logic/Header.h"
+#include "src/Logic/Converting.h"
+#include "src/Visual/Rectangle.h"
+#include "src/Visual/BBRect.h"
+#include "src/Visual/Label.h"
+#include "src/Visual/Button.h"
+#include "src/Visual/TextBox.h"
 using namespace sf; 
 using namespace std;
-using namespace Btn;
+bool isCaps = false;
 const int RECTANGLENUMBERS = 16;
 int Volume[4] = {11,20,40};
 Texture Textures[79];
 Sprite Sprites[79];
 string Name;
 int NUMBER = 0;
-int NUMBERCHESS = 0;
 /*
 1. Передалать все под принципы ооп
 */
 
-void init(RenderWindow& window)
+void init()
 {
 	int CurrentFrame = 0, temp = 0;
 	while (CurrentFrame != 79) {
@@ -210,7 +204,7 @@ void barley_break(RenderWindow& window)
 		if (BackBtn.onClick(mouse, Color::Yellow)) {
 			return;
 		}
-		if (RestartBtn.onClick(mouse, Color::Yellow)) {
+		/*if (RestartBtn.onClick(mouse, Color::Yellow)) {
 			for (int i = 0; i < 3*RECTANGLENUMBERS; i++) {
 				Vector2i vect1, vect2;
 				int rand1 = rand()%(RECTANGLENUMBERS), rand2 = rand()%(RECTANGLENUMBERS);
@@ -219,11 +213,19 @@ void barley_break(RenderWindow& window)
 				rect[rand1].setPosition(vect2);
 				rect[rand2].setPosition(vect1);
 			}
+		}*/
+		if (RestartBtn.onClick(mouse, Color::Yellow)) {
+			for (int i = 0; i < 100*RECTANGLENUMBERS; i++) {
+				int rand1 = (rand() % (RECTANGLENUMBERS-1))+1;
+				Vector2i vect1=rect[rand1].getPosition(), vect2 = rect[0].getPosition();
+				if ((abs(vect1.x - vect2.x) == rect[rand1].getSize().x) || (abs(vect1.y - vect2.y) == rect[rand1].getSize().y))
+					if ((abs(vect1.x - vect2.x) == 0) || (abs(vect1.y - vect2.y) == 0)) {
+						rect[rand1].swap(rect[0]);
+					}
+			}
 		}
 		if (CodeBox.getSelect(event, mouse)) {	
-			{
-				CodeBox.editTextString(event);
-			}
+			CodeBox.editTextString(event);
 		}
 		if (CheckBtn.onClick(mouse, Color::Yellow)) {
 			if(CodeBox.getString() == "win")
@@ -273,52 +275,6 @@ void barley_break(RenderWindow& window)
 	}
 }
 
-void chess(RenderWindow& window)
-{
-	Texture GameBack1;
-	GameBack1.loadFromFile("resources/game1.png");
-	Sprite background(GameBack1);
-	Button BackBtn("Back", 1350, 50, 80);
-	NUMBERCHESS = 0;
-	ChessRect chess[64];
-	while (window.isOpen())
-	{
-		Vector2i mouse = Mouse::getPosition(window);
-		Event event;
-		window.pollEvent(event);
-		window.clear();
-		//system("cls");
-		/*for (int i = 0; i < 64; i++) {
-			if (i % 8 == 0)
-				cout << endl;
-			cout << chesss[i].getType() << '\t' << '\t';
-		}
-		cout << endl;*/
-		for(int i =0;i < 64; i++)
-		if (chess[i].getSelect(mouse)) {
-			if (chess[i].getType() == "pawn") {
-
-			}
-		}
-		if (Keyboard::isKeyPressed(Keyboard::Escape)) {
-			return;
-		}
-		if (BackBtn.onClick(mouse, Color::Yellow)) {
-			return;
-		}
-
-
-
-
-
-		window.draw(background);
-		for (int i = 0; i < 64; i++)
-			chess[i].OutHere(window);
-		BackBtn.outHere(window);
-		window.display();
-	}
-}
-
 void menu(RenderWindow& window)
 {
 	Music music;
@@ -332,7 +288,6 @@ void menu(RenderWindow& window)
 	int MenuNum = 0;
 	Background.setPosition(0, 0);
 	Button AboutBtn("About",100,400,100), ExitBtn("Exit",100,500,80), SettingBtn("Settings",1350,50,150), BBBtn("Barley-break",100,300,225);
-	Button ChessBtn("Chess", 100, 200, 100);
 	Label UserLbl("", 0, 0);
 	while (IsMenu) {
 		Event event;
@@ -345,13 +300,6 @@ void menu(RenderWindow& window)
 			music.pause();
 			load(window);
 			barley_break(window);
-			load(window);
-			music.play();
-		}
-		if (ChessBtn.onClick(mouse)) {
-			music.pause();
-			load(window);
-			chess(window);
 			load(window);
 			music.play();
 		}
@@ -372,7 +320,6 @@ void menu(RenderWindow& window)
 		}
 		window.draw(Background);
 		BBBtn.outHere(window);
-		ChessBtn.outHere(window);
 		AboutBtn.outHere(window);
 		SettingBtn.outHere(window);
 		UserLbl.outHere(window);
@@ -388,7 +335,7 @@ int main()
 	srand(time(NULL));
 	//FreeConsole();
 	RenderWindow window(VideoMode(1600, 900), "Game");
-	init(window);
+	init();
 	login(window);
 	load(window);
 	menu(window);
