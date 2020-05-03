@@ -37,3 +37,21 @@ Vector2i Label::getPos()
 	temp.y = y;
 	return temp;
 }
+Text Label::getText()
+{
+	return text;
+}
+Text Label::getShadow()
+{
+	return textShadow;
+}
+void Label::outHere(RenderWindow& window)
+{
+	window.draw(getShadow());
+	window.draw(getText());
+}
+void Label::setText(string st)
+{
+	text.setString(st);
+	textShadow.setString(st);
+}

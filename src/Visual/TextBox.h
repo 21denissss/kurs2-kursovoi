@@ -15,15 +15,7 @@ private:
 	RectangleShape BOX;
 	bool select;
 	int x, y, weight, height;
-	bool inBox(Vector2i mouse)
-	{
-		if ((mouse.x > x && mouse.x < x + weight) && (mouse.y > y && mouse.y < y + height)) {
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
+	bool inBox(Vector2i mouse);
 public:
 	TextBox(float x_in = 0, float y_in = 0, int w = 110, int h = 50, Color col_in = Color::Black);
 	
@@ -32,14 +24,7 @@ public:
 	void editTextInt(Event event);
 	void editTextString(Event event);
 	int getInt();
-	string getString()
-	{
-		return text.getString();
-	}
-	void outHere(RenderWindow& window)
-	{
-		window.draw(BOX);
-		window.draw(text);
-	}
+	string getString();
+	void outHere(RenderWindow& window);
 };
 

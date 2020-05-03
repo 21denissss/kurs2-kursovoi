@@ -133,3 +133,22 @@ bool TextBox::is_empty()
 			return true;
 	}
 }
+bool TextBox::inBox(Vector2i mouse)
+{
+	if ((mouse.x > x && mouse.x < x + weight) && (mouse.y > y && mouse.y < y + height)) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+string TextBox::getString()
+{
+	return text.getString();
+}
+void TextBox::outHere(RenderWindow& window)
+{
+	window.draw(BOX);
+	window.draw(text);
+}
