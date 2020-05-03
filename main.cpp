@@ -9,6 +9,7 @@
 #include <string.h>
 #include <windows.h>
 #include <ctime>
+#include "Label.h"
 using namespace sf; 
 using namespace std;
 using namespace Btn;
@@ -17,7 +18,8 @@ int Volume[4] = {11,20,40};
 Texture Textures[79];
 Sprite Sprites[79];
 string Name;
-int number = 0;
+int NUMBER = 0;
+int NUMBERCHESS = 0;
 /*
 1. Передалать все под принципы ооп
 */
@@ -181,16 +183,17 @@ void settings(RenderWindow& window)
 	}
 }
 
-void game(RenderWindow& window)
+void barley_break(RenderWindow& window)
 {
 	Music music;
-	number = 0;
 	music.openFromFile("resources/music/play.ogg");
 	music.setVolume(Volume[0]);
 	music.play();
 	music.setLoop(1);
+	
+	BBRect rect[RECTANGLENUMBERS];
+	NUMBER = 0;
 	Texture GameBack1;
-	Btn::Rectangle rect[RECTANGLENUMBERS];
 	GameBack1.loadFromFile("resources/game1.jpg");
 	TextBox CodeBox(1400, 700);
 	Label WinLbl("", 50, 50), OutLbl("", 50, 350), UserLbl("",0,0);
@@ -210,7 +213,7 @@ void game(RenderWindow& window)
 		if (RestartBtn.onClick(mouse, Color::Yellow)) {
 			for (int i = 0; i < 3*RECTANGLENUMBERS; i++) {
 				Vector2i vect1, vect2;
-				int rand1 = rand()%(RECTANGLENUMBERS-1), rand2 = rand()%(RECTANGLENUMBERS - 1);
+				int rand1 = rand()%(RECTANGLENUMBERS), rand2 = rand()%(RECTANGLENUMBERS);
 				vect1 = rect[rand1].getPosition();
 				vect2 = rect[rand2].getPosition();
 				rect[rand1].setPosition(vect2);
@@ -234,36 +237,14 @@ void game(RenderWindow& window)
 		}
 		for (int i = 0; i < RECTANGLENUMBERS; i++) {
 			if (rect[i].onClick(mouse)) {
-				Vector2i vect1, vect2;
-				vect1 = rect[i].getPosition();
-				vect2 = rect[0].getPosition();
-				if ((abs(vect1.x - vect2.x) == 75) || (abs(vect1.y - vect2.y) == 75))
+				Vector2i vect1 = rect[i].getPosition(), vect2 = rect[0].getPosition();
+				if ((abs(vect1.x - vect2.x) == rect[i].getSize().x) || (abs(vect1.y - vect2.y) == rect[i].getSize().y))
 					if ((abs(vect1.x - vect2.x) == 0) || (abs(vect1.y - vect2.y) == 0)) {
-						rect[i].setPosition(vect2);
-						rect[0].setPosition(vect1);
+						rect[i].swap(rect[0]);
 						break;
 					}
 			}
 		}
-		//Ячейки менять местами путем переноса одной яйчейки на другую
-		/*for (int i = 0; i < RECTANGLENUMBERS; i++) {
-			if (rect[i].onClick(mouse)) {
-				Vector2i mouse2 = Mouse::getPosition(window);
-				for (int j = 0; j < RECTANGLENUMBERS; j++){
-					if (rect[j].select(mouse2, Color::Yellow) && rect[j].getNumber() == 0) {
-						Vector2i vect1, vect2;
-						vect1 = rect[i].getPosition();
-						vect2 = rect[j].getPosition();
-						if((abs(vect1.x - vect2.x) == 75)||(abs(vect1.y-vect2.y) == 75))
-						if((abs(vect1.x - vect2.x) == 0) || (abs(vect1.y - vect2.y) == 0)){
-							rect[i].setPosition(vect2);
-							rect[j].setPosition(vect1);
-							break;
-						}
-					}
-				}
-			}
-		}*/
 		for (int i = 0; i < RECTANGLENUMBERS; i++) {
 			Vector2i vect1, vect2;
 			WinLbl.setText("Status: Not Win");
@@ -284,10 +265,56 @@ void game(RenderWindow& window)
 		CheckBtn.outHere(window);
 		CodeBox.outHere(window);
 		UserLbl.outHere(window);
-		OutLbl.outHere(window);
+		//OutLbl.outHere(window);
 		for (int i = 0; i < RECTANGLENUMBERS; i++) {
 			rect[i].OutHere(window);
 		}
+		window.display();
+	}
+}
+
+void chess(RenderWindow& window)
+{
+	Texture GameBack1;
+	GameBack1.loadFromFile("resources/game1.png");
+	Sprite background(GameBack1);
+	Button BackBtn("Back", 1350, 50, 80);
+	NUMBERCHESS = 0;
+	ChessRect chess[64];
+	while (window.isOpen())
+	{
+		Vector2i mouse = Mouse::getPosition(window);
+		Event event;
+		window.pollEvent(event);
+		window.clear();
+		//system("cls");
+		/*for (int i = 0; i < 64; i++) {
+			if (i % 8 == 0)
+				cout << endl;
+			cout << chesss[i].getType() << '\t' << '\t';
+		}
+		cout << endl;*/
+		for(int i =0;i < 64; i++)
+		if (chess[i].getSelect(mouse)) {
+			if (chess[i].getType() == "pawn") {
+
+			}
+		}
+		if (Keyboard::isKeyPressed(Keyboard::Escape)) {
+			return;
+		}
+		if (BackBtn.onClick(mouse, Color::Yellow)) {
+			return;
+		}
+
+
+
+
+
+		window.draw(background);
+		for (int i = 0; i < 64; i++)
+			chess[i].OutHere(window);
+		BackBtn.outHere(window);
 		window.display();
 	}
 }
@@ -304,7 +331,8 @@ void menu(RenderWindow& window)
 	bool IsMenu = 1;
 	int MenuNum = 0;
 	Background.setPosition(0, 0);
-	Button AboutBtn("About",100,400,100), ExitBtn("Exit",100,500,80), SettingBtn("Settings",1350,50,150), PlayBtn("Play",100,300,150);
+	Button AboutBtn("About",100,400,100), ExitBtn("Exit",100,500,80), SettingBtn("Settings",1350,50,150), BBBtn("Barley-break",100,300,225);
+	Button ChessBtn("Chess", 100, 200, 100);
 	Label UserLbl("", 0, 0);
 	while (IsMenu) {
 		Event event;
@@ -313,10 +341,17 @@ void menu(RenderWindow& window)
 		window.clear();
 		UserLbl.setText(Name);
 		music.setVolume(Volume[2]);
-		if (PlayBtn.onClick(mouse)) {
+		if (BBBtn.onClick(mouse)) {
 			music.pause();
 			load(window);
-			game(window);
+			barley_break(window);
+			load(window);
+			music.play();
+		}
+		if (ChessBtn.onClick(mouse)) {
+			music.pause();
+			load(window);
+			chess(window);
 			load(window);
 			music.play();
 		}
@@ -336,7 +371,8 @@ void menu(RenderWindow& window)
 			return;
 		}
 		window.draw(Background);
-		PlayBtn.outHere(window);
+		BBBtn.outHere(window);
+		ChessBtn.outHere(window);
 		AboutBtn.outHere(window);
 		SettingBtn.outHere(window);
 		UserLbl.outHere(window);
@@ -351,7 +387,7 @@ int main()
 	setlocale(LC_ALL, "ru");
 	srand(time(NULL));
 	//FreeConsole();
-	RenderWindow window(VideoMode(1600, 900), "15");
+	RenderWindow window(VideoMode(1600, 900), "Game");
 	init(window);
 	login(window);
 	load(window);
@@ -359,3 +395,24 @@ int main()
 	window.close();
 	return 0;
 }
+
+
+//Ячейки менять местами путем переноса одной яйчейки на другую
+/*for (int i = 0; i < RECTANGLENUMBERS; i++) {
+	if (rect[i].onClick(mouse)) {
+		Vector2i mouse2 = Mouse::getPosition(window);
+		for (int j = 0; j < RECTANGLENUMBERS; j++){
+			if (rect[j].select(mouse2, Color::Yellow) && rect[j].getNumber() == 0) {
+				Vector2i vect1, vect2;
+				vect1 = rect[i].getPosition();
+				vect2 = rect[j].getPosition();
+				if((abs(vect1.x - vect2.x) == 75)||(abs(vect1.y-vect2.y) == 75))
+				if((abs(vect1.x - vect2.x) == 0) || (abs(vect1.y - vect2.y) == 0)){
+					rect[i].setPosition(vect2);
+					rect[j].setPosition(vect1);
+					break;
+				}
+			}
+		}
+	}
+}*/

@@ -9,485 +9,329 @@
 #include <string.h>
 #include <windows.h>
 bool isCaps = false;
-
+#include "src/Logic/Converting.h"
+#include "src/Visual/Rectangle.h"
+#include "src/Visual/BBRect.h"
+#include "src/Visual/Label.h"
+#include "src/Visual/Button.h"
+#include "src/Visual/TextBox.h"
 using namespace sf; 
 using namespace std;
+extern int NUMBER;
+extern int NUMBERCHESS;
+
 namespace Btn {
-	int getASCI(Uint32 in_st)
-	{
-		if (in_st == -1 && isCaps)
-			isCaps = false;
-		else if (in_st == -1 && !isCaps)
-			isCaps = true;
-		if (in_st >= 0 && in_st < 25)
-			if (!isCaps)
-				in_st += 97;
-			else
-				in_st += 65;
-		else
-			if (in_st == 59)
-				in_st = 8;
-			else
-				if (in_st > 25 && in_st < 37)
-					in_st += 22;
-				else
-				in_st = -999;
-		return in_st;
-	}
-	Text string2text(string st)
-	{
-		Text text;
-		wstringstream ost;
-		wstring q;
-		wchar_t Mass[255];
-		MultiByteToWideChar(0, 0, st.c_str(), -1, Mass, 255);
-		ost << Mass;
-		q = ost.str();
-		text.setString(q);
-		return text;
-	}
-	string int2string(int number)
-	{
-		string st;
-		char ch;
-		int TempOst, TempCel = number, i = 0;
-		while (TempCel != 0)
+
+	class ChessRect :public Rectangle {
+		Texture texture;
+		Sprite sprite;
+		string type;
+		const int num;
+		char team;
+		bool isSelect;
+		void setSprite()
 		{
-			TempOst = TempCel % 10;
-			TempCel /= 10;
-			ch = TempOst + '0';
-			st = ch + st;
+			string st = "resources/chess/";
+			st = st + type + '_' + team + ".png";
+			texture.loadFromFile(st);
+			sprite.setTexture(texture);
 		}
-		return st;
-	}
-
-
-	class Rectangle {
-	private:
-		RectangleShape rect,shadowRect;
-		Text text;
-		int num;
-		Font font;
-		Color col;
-		int x_win, y_win;
-		int x,y,weight,height;
 	public:
-		Rectangle(int x, int y, int weight, int height);
-		int getNumber()
+		ChessRect(int x = 300, int y = 150, int weight = 75, int height = 75) :num(NUMBERCHESS)
 		{
-			return num;
+			x = x + weight * (num % 8);
+			y = y + height * (num / 8);
+
+			if ((x - y) % 2 != 0) {
+				rect.setFillColor(Color(128, 128, 128));
+			}
+			isSelect = false;
+			color = Color::Black;
+			setSize(Vector2i(weight, height));
+			rect.setSize(Vector2f(weight - 4, height - 4));
+			shadowRect.setSize(Vector2f(weight, height));
+			shadowRect.setFillColor(color);
+			string st = "resources/chess/";
+			switch (num) {
+			case 0:
+			case 7:
+				st += "rook_b.png";
+				type = "rook";
+				team = 'b';
+				break;
+			case 56:
+			case 63:
+				st += "rook_w.png";
+				type = "rook";
+				team = 'w';
+				break;
+			case 1:
+			case 6:
+				st += "knight_b.png";
+				type = "knight";
+				team = 'b';
+				break;
+			case 57:
+			case 62:
+				st += "knight_w.png";
+				type = "knight";
+				team = 'w';
+				break;
+			case 2:
+			case 5:
+				st += "bishop_b.png";
+				type = "bishop";
+				team = 'b';
+				break;
+			case 58:
+			case 61:
+				st += "bishop_w.png";
+				type = "bishop";
+				team = 'w';
+				break;
+			case 3:
+				st += "queen_b.png";
+				type = "queen";
+				team = 'b';
+				break;
+			case 59:
+				st += "queen_w.png";
+				type = "queen";
+				team = 'w';
+				break;
+			case 4:
+				st += "king_b.png";
+				type = "king";
+				team = 'b';
+				break;
+			case 60:
+				st += "king_w.png";
+				type = "king";
+				team = 'w';
+				break;
+			default:
+				type = "n";
+				team = 'n';
+				break;
+			}
+			if (num >= 8 && num <= 15) {
+				st += "pawn_b.png";
+				type = "pawn";
+				team = 'b';
+			}
+			if (num >= 48 && num <= 55) {
+				st += "pawn_w.png";
+				type = "pawn";
+				team = 'w';
+			}
+			if (num < 16 || num > 47) {
+				texture.loadFromFile(st);
+				sprite.setTexture(texture);
+			}
+
+			setPosition(Vector2i(x, y));
+			NUMBERCHESS++;
 		}
-		bool select(Vector2i mouse, Color col);
-		Vector2i getPosition();
-		Vector2i getWinPosition();
-		void setPosition(Vector2i mouse);
+		string getType()
+		{
+			return type;
+		}
+		char getTeam()
+		{
+			return team;
+		}
+		void outMove()
+		{
+			int i = 1;
+			if (team == 'w') {
+				i *= -1;
+			}
+			if (getType() == "pawn") {
+				
+			}else
+			if (getType() == "rook") {
+
+			}else
+			if (getType() == "knight") {
+
+			}
+			else
+			if (getType() == "queen") {
+
+			}
+			else
+			if (getType() == "king") {
+
+			}
+			else
+			if (getType() == "bishop") {
+
+			}
+		}
+		void changeType(string type)
+		{
+			this->type = type;
+			setSprite();
+		}
+		void killFig()
+		{
+			this->type = "n";
+			team = 'n';
+			setSprite();
+		}
+		Vector2i getSize()
+		{
+			return size;
+		}
+		void setPosition(Vector2i coord)
+		{
+			this->coord = coord;
+			shadowRect.setPosition(coord.x, coord.y);
+			rect.setPosition(coord.x + 2, coord.y + 2);
+			sprite.setPosition(coord.x + 2, coord.y + 2);
+		}
+		bool getSelect(Vector2i mouse)
+		{
+			if (select(mouse)&& Mouse::isButtonPressed(Mouse::Left)) {
+				shadowRect.setFillColor(Color::Magenta);
+				isSelect = true;
+				//click();
+			}
+			if (!select(mouse)&&Mouse::isButtonPressed(Mouse::Left)) {
+				shadowRect.setFillColor(Color::Black);
+				isSelect = false;
+				//click();
+			}
+			return isSelect;
+		}
 		void OutHere(RenderWindow& window)
 		{
-			shadowRect.setPosition(x, y);
-			rect.setPosition(x + 2, y + 2);
-			if(num < 10)
-				text.setPosition(-9 + x + weight / 2, -19 + y + height / 2);
-			else
-				text.setPosition(-16 + x + weight / 2, -19 + y + height / 2);
 			window.draw(shadowRect);
 			window.draw(rect);
-			window.draw(text);
-		}
-		bool onClick(Vector2i mouse, Color col_in);
-	};
-
-
-	class Label {
-	private:
-		Text text, textShadow;
-		Font font;
-		Color col;
-		float x, y;
-		Text getText()
-		{
-			return text;
-		}
-		Text getShadow()
-		{
-			return textShadow;
-		}
-	public:
-		Label(string st, float x_in, float y_in, int size, Color col_in, Color colShadow_in);
-		void changePos(float dx, float dy);
-		void setPos(int x_in, int y_in);
-		Vector2i getPos();
-		void outHere(RenderWindow& window)
-		{
-			window.draw(getShadow());
-			window.draw(getText());
-		}
-		void setText(string st)
-		{
-			text.setString(st);
-			textShadow.setString(st);
-		}
-		
-	};
-
-
-	class Button {
-	private:
-		Text text, textShadow;
-		Font font;
-		Color col;
-		int x, y, weight, height;
-		bool select(Vector2i mouse, Color col_in);
-		Text getText()
-		{
-			return text;
-		}
-		Text getShadow()
-		{
-			return textShadow;
-		}
-	public:
-		Button(string st, float x_in, float y_in, int w, int h, Color col_in, Color colShadow_in);
-		bool onClick(Vector2i mouse, Color col_in);
-		void outHere(RenderWindow& window)
-		{
-			window.draw(getShadow());
-			window.draw(getText());
+			window.draw(sprite);
 		}
 	};
 
-
-	class TextBox {
-	private:
-		Text text;
-		Font font;
-		Color col;
-		bool isReleased;
-		RectangleShape BOX;
-		bool select;
-		int x, y, weight, height;
-		bool inBox(Vector2i mouse)
-		{
-			if ((mouse.x > x && mouse.x < x + weight) && (mouse.y > y && mouse.y < y + height)) {
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
-	public:
-		TextBox(float x_in, float y_in, int w, int h, Color col_in);
-		bool getSelect(Event event, Vector2i mouse);
-		bool is_empty();
-		void editTextInt(Event event);
-		void editTextString(Event event);
-		int getInt();
-		string getString()
-		{
-			return text.getString();
-		}
-		void outHere(RenderWindow& window)
-		{
-			window.draw(BOX);
-			window.draw(text);
-		}
-	};	
-}
-
-
-
-
-
-
-
-
-
-
-//TextBox
-Btn::TextBox::TextBox(float x_in = 0, float y_in = 0, int w = 110, int h = 50, Color col_in = Color::Black) {
-	font.loadFromFile("resources/comic.ttf");
-	x = x_in;
-	y = y_in;
-	isReleased = false;
-	col = col_in;
-	weight = w;
-	height = h;
-	text.setString("");
-	text.setFont(font);
-	text.setPosition(x, y);
-	text.setCharacterSize(36);
-	text.setFillColor(col_in);
-	BOX.setSize(Vector2f(w + 4, h + 2));
-	BOX.setPosition(x - 2, y - 1);
-	BOX.setFillColor(Color::White);
-}
-int Btn::TextBox::getInt()
-{
-	string temp = "0", st = text.getString();
-	int result = 0;
-	bool minus = false;
-	if (st[0] == '-') {
-		minus = true;
-	}
-	for (int i = 0; i < st.length(); i++) {
-		if (st[i] >= 48 && st[i] <= 57) {
-			temp += st[i];
-		}
-	}
-	for (int i = 0; i < temp.length(); i++) {
-		result += (temp[i] - 48) * pow(10, temp.length() - i - 1);
-	}
-	if (minus) result *= -1;
-	return result;
-}
-void Btn::TextBox::editTextString(Event event)
-{
-	Uint32 in_st = event.text.unicode;
-	in_st = getASCI(in_st);
-
-	string st = text.getString();
-	if (in_st == -999)
-		return;
-	if (in_st == 8) {
-		if (st.length() != 1) {
-			st.erase(st.length() - 2, 2);
-			text.setString(st + "|");
-		}
-
-	}
-	else
-		if ((st[st.length() - 1] == '|') && st.length() <= 4) {
-			st.erase(st.length() - 1, 1);
-			st += in_st;
-			text.setString(st + "|");
-		}
-}
-void Btn::TextBox::editTextInt(Event event)
-{
-	Uint32 in_st = event.text.unicode;
-	string st = text.getString();
-	in_st = getASCI(in_st);
-	cout << int(in_st) << endl;
-
-	if (in_st == -999)
-		return;
-	if ((in_st >= 48 && in_st <= 57) || in_st == 8 || in_st == 45) {
-		if (in_st == 45) {
-			if (st.length() != 1) {
-				st.erase(st.length() - 1, 1);
-				text.setString(st + "-");
-				text.setString(st + "|");
-			}
-		}
-		if (in_st == 8) {
-			if (st.length() != 1) {
-				st.erase(st.length() - 2, 2);
-				text.setString(st + "|");
-			}
-
-		}
-		else
-			if ((st[st.length() - 1] == '|') && st.length() <= 4) {
-				st.erase(st.length() - 1, 1);
-				st += in_st;
-				text.setString(st + "|");
-			}
-	}
-}
-bool Btn::TextBox::getSelect(Event event, Vector2i mouse)
-{
-	if (event.type == Event::KeyReleased)
-		isReleased = false;
-	if (inBox(mouse) && Mouse::isButtonPressed(Mouse::Left)) {
-		string st = text.getString();
-		if (st[st.length() - 1] != '|') {
-			text.setString(st + "|");
-			select = true;
-		}
-	}
-	if (!inBox(mouse) && Mouse::isButtonPressed(Mouse::Left))
+	ChessRect* getMoveRect(ChessRect* chess,int pos)
 	{
-		string st = text.getString();
-		if (st[st.length() - 1] == '|') {
-			st.erase(st.length() - 1, 1);
-			text.setString(st);
+		int i = 1, j = 0;
+		Vector2i temp = chess[pos].getPosition();
+		ChessRect* moveRect = new ChessRect[64];
+		if (chess[pos].getTeam() == 'w') {
+			i *= -1;
 		}
-		select = false;
-	}
-	if (!isReleased && (event.type == Event::KeyPressed)) {
-		isReleased = true;
-		return select;
-	}
-	else {
-		return false;
+		if (chess[pos].getType() == "pawn") {
+			for (int i = 0; i < 64; i++) {
+				Vector2i vect = chess[i].getPosition(), size = chess[i].getSize();
+				if (abs(vect.x - temp.x)==size.x || abs(vect.y - temp.y)==size.y)
+				if ((abs(vect.x - temp.x) == 0) || (abs(vect.y - temp.y) == 0)){
+					//moveRect[j++] = chess[i];
+				}
+			}
+		}else
+		if (chess[pos].getType() == "rook") {
 
-	}
-}
-bool Btn::TextBox::is_empty()
-{
-	string st = text.getString();
-	if (st.length() == 0) {
-		return true;
-	}
-	else {
-		if (st[0] != '|')
-			return false;
+		}else
+		if (chess[pos].getType() == "knight") {
+
+		}
 		else
-			return true;
+		if (chess[pos].getType() == "queen") {
+
+		}
+		else
+		if (chess[pos].getType() == "king") {
+
+		}
+		else
+		if (chess[pos].getType() == "bishop") {
+
+		}
+		return moveRect;
 	}
+
+
+	
+
+	
+
+
+	
 }
-//Button
-Btn::Button::Button(string st = "\0", float x_in = 0, float y_in = 0, int w = 200, int h = 50, Color col_in = Color::White, Color colShadow_in = Color::Blue) {
-	font.loadFromFile("resources/comic.ttf");
-	x = x_in;
-	y = y_in;
-	col = col_in;
-	weight = w;
-	height = h;
-	text.setFont(font);
-	text.setPosition(x, y);
-	text.setString(st);
-	text.setCharacterSize(36);
-	text.setFillColor(col_in);
-	textShadow.setFont(font);
-	textShadow.setPosition(x - 1, y);
-	textShadow.setString(st);
-	textShadow.setCharacterSize(36);
-	textShadow.setFillColor(colShadow_in);
-}
-bool Btn::Button::select(Vector2i mouse, Color col_in = Color::Black)
-{
-	if ((mouse.x > x && mouse.x < x + weight) && (mouse.y > y && mouse.y < y + height)) {
-		text.setFillColor(col_in);
-		textShadow.setFillColor(Color::Black);
-		return true;
-	}
-	else {
-		text.setFillColor(col);
-		textShadow.setFillColor(Color::Blue);
-		return false;
-	}
-}
-bool Btn::Button::onClick(Vector2i mouse, Color col_in = Color::Black)
-{
-	if (select(mouse, col_in) && Mouse::isButtonPressed(Mouse::Left)) {
-		while (select(mouse, col_in) && Mouse::isButtonPressed(Mouse::Left));
-		Music music;
-		music.openFromFile("resources/music/click.ogg");
-		music.setVolume(100);
-		music.play();
-		Sleep(music.getDuration().asMilliseconds());
-		return true;
-	}
-	else
-		return false;
-}
-//Label
-Btn::Label::Label(string st = "\0", float x_in = 0, float y_in = 0, int size = 36, Color col_in = Color::White, Color colShadow_in = Color::Blue) {
-	font.loadFromFile("resources/comic.ttf");
-	x = x_in;
-	y = y_in;
-	col = col_in;
-	text = string2text(st);
-	text.setFont(font);
-	text.setPosition(x, y);
-	text.setCharacterSize(size);
-	text.setFillColor(col_in);
-	textShadow = string2text(st);
-	textShadow.setFont(font);
-	textShadow.setPosition(x - 2, y - 1);
-	textShadow.setCharacterSize(size);
-	textShadow.setFillColor(colShadow_in);
-}
-void Btn::Label::changePos(float dx = 0, float dy = -1)
-{
-	x += dx;
-	y += dy;
-	text.setPosition(x, y);
-	textShadow.setPosition(x, y);
-}
-void Btn::Label::setPos(int x_in, int y_in)
-{
-	x = x_in;
-	y = y_in;
-	text.setPosition(x, y);
-	textShadow.setPosition(x, y);
-}
-Vector2i Btn::Label::getPos()
-{
-	Vector2i temp;
-	temp.x = x;
-	temp.y = y;
-	return temp;
-}
+
+
+
+
+
 //Rectangle
-Btn::Rectangle::Rectangle(int x = 650, int y = 300, int weight = 75, int height = 75)
-{
-	extern int number;
-	num = number;
-	col = Color::Black;
-	if (number == 0)
-		number = 16;
-	x = x + weight * ((number - 1) % 4);
-	y = y + height * ((number - 1) / 4);
-	x_win = x;
-	y_win = y;
-	if (number == 16)
-		number = 0;
-	font.loadFromFile("resources/comic.ttf");
-	rect.setSize(sf::Vector2f(weight - 4, height - 4));
-	shadowRect.setSize(sf::Vector2f(weight, height));
-	shadowRect.setFillColor(col);
-	this->weight = weight;
-	this->height = height;
-	this->x = x;
-	this->y = y;
-	text = string2text(int2string(number));
-	text.setFillColor(col);
-	text.setFont(font);
-	text.setCharacterSize(36);
-	number++;
-}
-bool Btn::Rectangle::select(Vector2i mouse, Color col)
-{
-	if ((mouse.x > x && mouse.x < x + weight) && (mouse.y > y && mouse.y < y + height)) {
-		text.setFillColor(col);
-		return true;
-	}
-	else {
-		text.setFillColor(this->col);
-		return false;
-	}
-}
-Vector2i Btn::Rectangle::getPosition()
-{
-	Vector2i vect;
-	vect.x = x;
-	vect.y = y;
-	return vect;
-}
-Vector2i Btn::Rectangle::getWinPosition()
-{
-	Vector2i vect;
-	vect.x = x_win;
-	vect.y = y_win;
-	return vect;
-}
-void Btn::Rectangle::setPosition(Vector2i mouse)
-{
-	x = mouse.x;
-	y = mouse.y;
-}
-bool Btn::Rectangle::onClick(Vector2i mouse, Color col_in = Color::Yellow)
-{
-	if (select(mouse, col_in) && Mouse::isButtonPressed(Mouse::Left)) {
-		while (Mouse::isButtonPressed(Mouse::Left));
-		Music music;
-		music.openFromFile("resources/music/click.ogg");
-		music.setVolume(100);
-		music.play();
-		Sleep(125);
-		return true;
-	}
-	else
-		return false;
-}
+//Btn::Rectangle::Rectangle(int x = 650, int y = 300, int weight = 75, int height = 75)
+//{
+//	extern int number;
+//	num = number;
+//	col = Color::Black;
+//	if (number == 0)
+//		number = 16;
+//	x = x + weight * ((number - 1) % 4);
+//	y = y + height * ((number - 1) / 4);
+//	x_win = x;
+//	y_win = y;
+//	if (number == 16)
+//		number = 0;
+//	font.loadFromFile("resources/comic.ttf");
+//	rect.setSize(sf::Vector2f(weight - 4, height - 4));
+//	shadowRect.setSize(sf::Vector2f(weight, height));
+//	shadowRect.setFillColor(col);
+//	this->weight = weight;
+//	this->height = height;
+//	this->x = x;
+//	this->y = y;
+//	text = string2text(int2string(number));
+//	text.setFillColor(col);
+//	text.setFont(font);
+//	text.setCharacterSize(36);
+//	number++;
+//}
+//bool Btn::Rectangle::select(Vector2i mouse, Color col)
+//{
+//	if ((mouse.x > x && mouse.x < x + weight) && (mouse.y > y && mouse.y < y + height)) {
+//		text.setFillColor(col);
+//		return true;
+//	}
+//	else {
+//		text.setFillColor(this->col);
+//		return false;
+//	}
+//}
+//Vector2i Btn::Rectangle::getPosition()
+//{
+//	Vector2i vect;
+//	vect.x = x;
+//	vect.y = y;
+//	return vect;
+//}
+//Vector2i Btn::Rectangle::getWinPosition()
+//{
+//	Vector2i vect;
+//	vect.x = x_win;
+//	vect.y = y_win;
+//	return vect;
+//}
+//void Btn::Rectangle::setPosition(Vector2i mouse)
+//{
+//	x = mouse.x;
+//	y = mouse.y;
+//}
+//bool Btn::Rectangle::onClick(Vector2i mouse, Color col_in = Color::Yellow)
+//{
+//	if (select(mouse, col_in) && Mouse::isButtonPressed(Mouse::Left)) {
+//		while (Mouse::isButtonPressed(Mouse::Left));
+//		Music music;
+//		music.openFromFile("resources/music/click.ogg");
+//		music.setVolume(100);
+//		music.play();
+//		Sleep(125);
+//		return true;
+//	}
+//	else
+//		return false;
+//}
